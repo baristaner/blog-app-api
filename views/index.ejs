@@ -1,0 +1,31 @@
+<div class="container mt-5">
+    <h1>Posts</h1>
+    <div class="row" id="posts-container">
+        <!-- display posts in here -->
+    </div>
+</div>
+
+<script>
+    fetch('/posts/json')
+        .then(response => response.json())
+        .then(data => {
+            const postsContainer = document.getElementById('posts-container');
+            data.forEach(post => {
+                const postCard = document.createElement('div');
+                postCard.classList.add('col-md-4', 'mb-4');
+                postCard.innerHTML = `
+                    <div class="card">
+                        <div class="card-body">
+                            <h1 class="card-title">${post.title}</h5>
+                            <p class="card-text">${post.content}</p>
+                        </div>
+                    </div>
+                `;
+                postsContainer.appendChild(postCard);
+            });
+        })
+        .catch(error => {
+            console.error(error);
+            
+        });
+</script>
