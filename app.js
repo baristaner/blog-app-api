@@ -11,6 +11,7 @@ const session = require('express-session');
 
 const indexRoutes = require('./routes/index');
 const adminRoutes = require('./routes/adminRoutes');
+const postRoutes = require('./routes/posts');
 const authRoutes = require('./auth/AuthProvider');
 
 //Middlewares
@@ -24,6 +25,7 @@ app.use(session({ secret: 'your-secret-key', resave: false, saveUninitialized: f
 // Routes
 app.use(indexRoutes);
 app.use(adminRoutes);
+app.use(postRoutes);
 app.use(authRoutes);
 
 app.listen(3000, () => {
