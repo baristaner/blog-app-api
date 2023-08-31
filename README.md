@@ -15,8 +15,8 @@ You need to have Node.js and MongoDB installed on your local machine to run this
 1. Clone this repository to your local machine:
 
    ```bash
-   git clone https://github.com/YOUR_USERNAME/BLOG-Application.git](https://github.com/baristaner/blog-app-api.git
-   cd BLOG-Application
+   git clone https://github.com/baristaner/blog-app-api.git
+   cd blog-app-api
 
 2. Install the required dependencies by running the following command in the terminal:
 
