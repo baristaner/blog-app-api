@@ -8,20 +8,23 @@ const app = express();
 const bodyParser = require('body-parser');
 const session = require('express-session');
 
+
+const indexRoutes = require('./routes/index');
+const adminRoutes = require('./routes/adminRoutes');
+const authRoutes = require('./auth/AuthProvider');
+
+//Middlewares
+app.use(cors());
 app.use(methodOverride('_method'));
 app.set('view engine', 'ejs');
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 app.use(session({ secret: 'your-secret-key', resave: false, saveUninitialized: false }));
 
-const indexRoutes = require('./routes/index');
-const adminRoutes = require('./routes/adminRoutes');
-
-//Middlewares
-app.use(cors()); // cors middleware'ini ekledik
+// Routes
 app.use(indexRoutes);
 app.use(adminRoutes);
-
+app.use(authRoutes);
 
 app.listen(3000, () => {
   console.log('Server is running on port 3000');
