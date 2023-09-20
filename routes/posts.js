@@ -1,5 +1,6 @@
 const express = require('express');
 const router = express.Router();
+const path = require('path');
 const Post = require('../models/Post'); 
 
 // GET All Posts as JSON
@@ -27,5 +28,17 @@ router.get('/posts/:postId', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+// Get the Image path 
+router.get('/uploads/:imagePath', (req, res) => {
+  const imagePath = req.params.imagePath;
+  const imageFilePath = path.join(__dirname, '../uploads', imagePath);
+
+  
+  res.sendFile(imageFilePath);
+});
+
+
+
 
 module.exports = router;
