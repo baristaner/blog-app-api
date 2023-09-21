@@ -1,6 +1,7 @@
 const express = require('express');
 const basicAuth = require('express-basic-auth');
 const router = express.Router();
+const jwt = require('jsonwebtoken');
 const Post = require('../models/Post'); // load post model
 
 const multer = require('multer');
@@ -16,15 +17,37 @@ const storage = multer.diskStorage({
 
 const upload = multer({ storage: storage });
 
-
 router.get('/admin', (req, res) => {
     res.render('admin-login'); // admin-login.ejs
 });
 
-router.post('/admin/addpost', upload.single('image'), async (req, res) => {
+// Middleware: Token auth 
+const authenticateToken = (req, res, next) => {
+  const token = req.headers.authorization?.split(' ')[1];
+
+  if (!token) {
+    return res.status(401).json({ error: 'Authentication failed' });
+  }
+
+  jwt.verify(token, 'your-secret-key', (err, decoded) => {
+    if (err) {
+      return res.status(401).json({ error: 'Authentication failed' });
+    }
+
+    req.userId = decoded.userId;
+    next();
+  });
+};
+
+router.post('/admin/addpost', authenticateToken, upload.single('image'), async (req, res) => {
     try {
         const { title, content } = req.body;
-        const imagePath = req.file.path; // Dosya yolu
+        
+        let imagePath = null;
+        if (req.file) {
+            imagePath = req.file.path;
+        }
+        
         const newPost = new Post({
             title,
             content,
@@ -73,22 +96,38 @@ router.post('/admin/updatepost/:id', async (req, res) => {
   }
 });
 
+router.put('/admin/editpost/:id', async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const updatedPost = await Post.findByIdAndUpdate(req.params.id, { title, content }, { new: true });
+    
+    if (!updatedPost) {
+      return res.status(404).json({ error: 'Post not found' });
+    }
+
+    res.status(200).json(updatedPost);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 router.get('/admin/edit/:id', async (req, res) => {
     try {
         const postId = req.params.id;
         const post = await Post.findById(postId);
-        res.render('edit', { post }); // edit.ejs görünümünü yükler ve post verisini iletilir
+        res.json(post); // JSON verisi olarak post verisini iletilir
     } catch (error) {
         console.error(error);
-        res.render('error'); // Hata görünümünü yükler
+        res.status(500).json({ error: 'Sunucu hatası: Gönderi düzenlenemedi.' });
     }
 });
 
-router.delete('/admin/deletepost/:id', async (req, res) => {
+router.delete('/admin/deletepost/:id', authenticateToken,async (req, res) => {
     try {
         await Post.findByIdAndDelete(req.params.id);
-        res.redirect('/admin/dashboard'); // Admin paneline yönlendir
+        console.log("Post Deleted successfully");
     } catch (error) {
         console.error(error);
         res.render('error'); // Hata görünümünü yükler
