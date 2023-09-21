@@ -36,13 +36,6 @@ You need to have Node.js and MongoDB installed on your local machine to run this
     ```bash
     npm start
 
-## Usage
-
-Visit http://localhost:3000 in your browser to view the blog posts.
-
-To log in as an administrator, go to the /admin page and log in.
-
-In the admin panel, you can add new posts, edit existing ones, and delete posts. 
 
 ### Technologies Used
 * Express.js
