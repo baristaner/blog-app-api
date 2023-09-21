@@ -1,10 +1,15 @@
 const express = require('express');
+const dotenv = require('dotenv');
 const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/User'); 
 const router = express.Router();
 
+dotenv.config(); 
 router.use(express.json());
+
+const sessionSecret = process.env.SESSION_SECRET;
+
 
 router.post('/signup', async (req, res) => {
     const { username, email, password } = req.body; 
@@ -33,7 +38,7 @@ router.post('/login', async (req, res) => {
             return res.status(401).json({ error: 'Authentication failed' });
         }
 
-        const token = jwt.sign({ userId: user._id }, 'your-secret-key', { expiresIn: '1h' });
+        const token = jwt.sign({ userId: user._id }, sessionSecret, { expiresIn: '1h' });
         res.json({ token });
     } catch (error) {
         console.error(error);
@@ -44,7 +49,7 @@ router.post('/login', async (req, res) => {
 router.get('/protected', (req, res) => {
     const token = req.headers.authorization.split(' ')[1];
     
-    jwt.verify(token, 'your-secret-key', (err, decoded) => {
+    jwt.verify(token, sessionSecret, (err, decoded) => {
         if (err) {
             return res.status(401).json({ error: 'Authentication failed' });
         }

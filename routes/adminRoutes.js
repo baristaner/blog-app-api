@@ -61,66 +61,17 @@ router.post('/admin/addpost', authenticateToken, upload.single('image'), async (
     }
 });
 
-
-router.get('/admin/dashboard', async (req, res) => {
+router.post('/updatepost',authenticateToken, async (req, res) => {
     try {
-        const posts = await Post.find(); // get all posts
-        res.render('admin-dashboard', { posts: posts });
+        const { id,title,content } = req.query; 
+        await Post.findByIdAndUpdate(id, {
+            title,
+            content
+        });
+        res.json({ id,title,content });
     } catch (error) {
         console.error(error);
-        res.status(500).send('An error occurred.');
-    }
-});
-
-router.post('/admin/updatepost/:id', async (req, res) => {
-  const postId = req.params.id;
-  const { title, content } = req.body;
-
-  try {
-    // Gönderiyi bul ve güncelle
-    const updatedPost = await Post.findByIdAndUpdate(
-      postId,
-      { title, content },
-      { new: true } // Güncellenmiş gönderiyi almak için { new: true } seçeneğini kullanın
-    );
-
-    if (!updatedPost) {
-      return res.status(404).json({ error: 'Gönderi bulunamadı.' });
-    }
-
-    // Başarı durumunda güncellenmiş gönderiyi yanıt olarak gönderin
-    res.status(200).json(updatedPost);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Sunucu hatası: Gönderi güncellenemedi.' });
-  }
-});
-
-router.put('/admin/editpost/:id', async (req, res) => {
-  try {
-    const { title, content } = req.body;
-    const updatedPost = await Post.findByIdAndUpdate(req.params.id, { title, content }, { new: true });
-    
-    if (!updatedPost) {
-      return res.status(404).json({ error: 'Post not found' });
-    }
-
-    res.status(200).json(updatedPost);
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ error: 'Internal server error' });
-  }
-});
-
-
-router.get('/admin/edit/:id', async (req, res) => {
-    try {
-        const postId = req.params.id;
-        const post = await Post.findById(postId);
-        res.json(post); // JSON verisi olarak post verisini iletilir
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Sunucu hatası: Gönderi düzenlenemedi.' });
+        res.status(500).json({ error: 'Sunucu hatası: Gönderi güncellenemedi.' });
     }
 });
 
@@ -130,7 +81,7 @@ router.delete('/admin/deletepost/:id', authenticateToken,async (req, res) => {
         console.log("Post Deleted successfully");
     } catch (error) {
         console.error(error);
-        res.render('error'); // Hata görünümünü yükler
+        res.render('error'); 
     }
 });
 
