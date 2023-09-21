@@ -18,17 +18,23 @@ You need to have Node.js and MongoDB installed on your local machine to run this
    git clone https://github.com/baristaner/blog-app-api.git
    cd blog-app-api
 
-2. Install the required dependencies by running the following command in the terminal:
+2. Create .ENV file in blog-app-api:
+
+   ```bash
+   MONGODB_URL=YOUR_URL_HERE
+   PORT=YOUR_PORT_HERE
+   SESSION_SECRET=YOUR_SESSION_SECRET_HERE
+   ```
+   
+3. Install the required dependencies by running the following command in the terminal:
 
     ```bash
     npm install
 
-3. Start the application by running the following command::
+4. Start the application by running the following command::
 
     ```bash
     npm start
-
-4. Go to http://localhost:3000 in your browser and explore the blog application.
 
 ## Usage
 
@@ -42,10 +48,6 @@ In the admin panel, you can add new posts, edit existing ones, and delete posts.
 * Express.js
   
 * MongoDB (Mongoose)
-
-* EJS (View Engine)
-
-* Bootstrap (CSS Framework)
 
 ## Contribution
 
