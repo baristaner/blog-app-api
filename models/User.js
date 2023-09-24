@@ -14,7 +14,12 @@ const userSchema = new mongoose.Schema({
   password: {
     type: String,
     required: true
-  }
+  },
+  profilePicture: {
+    type: String, 
+    default: null 
+  },
+  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }] 
 });
 
 const User = mongoose.model('User', userSchema);

@@ -1,3 +1,6 @@
+const dotenv = require('dotenv');
+dotenv.config(); 
+
 const express = require('express');
 const basicAuth = require('express-basic-auth');
 const router = express.Router();
@@ -6,12 +9,14 @@ const Post = require('../models/Post'); // load post model
 
 const multer = require('multer');
 
+const sessionSecret = process.env.SESSION_SECRET;
+
 const storage = multer.diskStorage({
     destination: function (req, file, cb) {
-        cb(null, 'uploads/'); // Dosyanın kaydedileceği klasör
+        cb(null, 'uploads/'); 
     },
     filename: function (req, file, cb) {
-        cb(null, Date.now() + '-' + file.originalname); // Dosyanın adı
+        cb(null, Date.now() + '-' + file.originalname); 
     }
 });
 
@@ -29,7 +34,7 @@ const authenticateToken = (req, res, next) => {
     return res.status(401).json({ error: 'Authentication failed' });
   }
 
-  jwt.verify(token, 'your-secret-key', (err, decoded) => {
+  jwt.verify(token, sessionSecret, (err, decoded) => {
     if (err) {
       return res.status(401).json({ error: 'Authentication failed' });
     }
@@ -41,7 +46,7 @@ const authenticateToken = (req, res, next) => {
 
 router.post('/admin/addpost', authenticateToken, upload.single('image'), async (req, res) => {
     try {
-        const { title, content } = req.body;
+        const { title, content,author } = req.body;
         
         let imagePath = null;
         if (req.file) {
@@ -51,7 +56,8 @@ router.post('/admin/addpost', authenticateToken, upload.single('image'), async (
         const newPost = new Post({
             title,
             content,
-            imagePath 
+            imagePath,
+            author 
         });
         await newPost.save();
         res.status(201).json({ message: 'Post created successfully' });

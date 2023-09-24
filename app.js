@@ -15,6 +15,7 @@ const session = require('express-session');
 const indexRoutes = require('./routes/index');
 const adminRoutes = require('./routes/adminRoutes');
 const postRoutes = require('./routes/posts');
+const userRoutes = require('./routes/users');
 const authRoutes = require('./auth/AuthProvider');
 
 const port = process.env.PORT || 3000;
@@ -32,6 +33,7 @@ app.use(session({ secret: sessionSecret, resave: false, saveUninitialized: false
 app.use(indexRoutes);
 app.use(adminRoutes);
 app.use(postRoutes);
+app.use(userRoutes);
 app.use(authRoutes);
 
 app.listen(port, () => {

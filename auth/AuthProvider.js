@@ -4,19 +4,33 @@ const jwt = require('jsonwebtoken');
 const bcrypt = require('bcrypt');
 const User = require('../models/User'); 
 const router = express.Router();
+const multer = require('multer');
+
 
 dotenv.config(); 
 router.use(express.json());
 
 const sessionSecret = process.env.SESSION_SECRET;
 
+const storage = multer.diskStorage({
+    destination: function (req, file, cb) {
+        cb(null, 'uploads/'); 
+    },
+    filename: function (req, file, cb) {
+        cb(null, Date.now() + '-' + file.originalname); 
+    }
+});
+const upload = multer({ storage: storage });
 
-router.post('/signup', async (req, res) => {
-    const { username, email, password } = req.body; 
+
+router.post('/signup', upload.single('profilePicture'), async (req, res) => {
+    const { username, email, password } = req.body;
     const hashedPassword = await bcrypt.hash(password, 10);
 
+    const profilePicturePath = req.file ? req.file.path : null;
+
     try {
-        const user = await User.create({ username, email, password: hashedPassword }); 
+        const user = await User.create({ username, email, password: hashedPassword, profilePicture: profilePicturePath });
         res.status(201).json({ message: 'User registered successfully' });
     } catch (error) {
         console.error(error);
