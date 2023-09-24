@@ -91,4 +91,15 @@ router.delete('/admin/deletepost/:id', authenticateToken,async (req, res) => {
     }
 });
 
+router.get('/admin/edit/:id', async (req, res) => {
+    try {
+        const postId = req.params.id;
+        const post = await Post.findById(postId);
+        res.json(post); // JSON verisi olarak post verisini iletilir
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Sunucu hatası: Gönderi düzenlenemedi.' });
+    }
+});
+
 module.exports = router;
