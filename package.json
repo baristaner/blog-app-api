@@ -1,6 +1,8 @@
 {
+  "main": "app.js",
   "scripts": {
-    "start": "nodemon index.js"
+    "devStart": "nodemon app.js",
+    "start": "node app.js"
   },
   "dependencies": {
     "bcrypt": "^5.1.1",

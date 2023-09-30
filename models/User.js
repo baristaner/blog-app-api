@@ -16,10 +16,12 @@ const userSchema = new mongoose.Schema({
     required: true
   },
   profilePicture: {
-    type: String, 
-    default: null 
+    type: String,
+    default: null
   },
-  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }] 
+  posts: [{ type: mongoose.Schema.Types.ObjectId, ref: 'Post' }],
+  following: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
+  followers: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }] 
 });
 
 const User = mongoose.model('User', userSchema);
