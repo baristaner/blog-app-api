@@ -17,6 +17,11 @@ router.get('/posts/all', async (req, res) => {
 // Like Post
 router.post('/likepost', async (req, res) => {
     const { author, postId } = req.query; 
+
+    if (!author || !postId) {
+    return res.status(400).json({ error: 'Author and postId must be provided' });
+    }
+
     try {
         const post = await Post.findById(postId);
         if (!post) {
@@ -41,6 +46,10 @@ router.post('/likepost', async (req, res) => {
 // Save Post
 router.post('/savepost', async (req, res) => {
     const { author, postId } = req.query; 
+
+    if (!author || !postId) {
+    return res.status(400).json({ error: 'Author and postId must be provided' });
+    }
 
     try {
         const post = await Post.findById(postId);
@@ -72,20 +81,21 @@ router.post('/savepost', async (req, res) => {
 // Add Comment to Post
 router.post('/commentpost', async (req, res) => {
     const { author, postId,text } = req.query; 
-    console.log(text);
+
+     if (!author || !postId || !text ) {
+    return res.status(400).json({ error: 'Author and postId,text must be provided' });
+    }
     try {
         const post = await Post.findById(postId);
         if (!post) {
             return res.status(404).json({ error: 'Post not found' });
         }
 
-        // Yeni bir yorum oluştur
         const newComment = {
             text,
             author: author,
         };
 
-        // Gönderiye yorumu ekle
         post.comments.push(newComment);
 
         await post.save();
@@ -116,12 +126,9 @@ router.get('/posts/:postId', async (req, res) => {
 router.get('/uploads/:imagePath', (req, res) => {
   const imagePath = req.params.imagePath;
   const imageFilePath = path.join(__dirname, '../uploads', imagePath);
-
   
   res.sendFile(imageFilePath);
 });
-
-
 
 
 module.exports = router;

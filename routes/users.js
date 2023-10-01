@@ -2,12 +2,22 @@ const express = require('express');
 const router = express.Router();
 const User = require('../models/User');
 const Post = require('../models/Post');
+const mongoose = require('mongoose');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 router.get('/users/:userId', async (req, res) => {
   try {
     const userId = req.params.userId;
 
+    if (!ObjectId.isValid(userId)) {
+      return res.status(400).json({ error: 'Invalid user ID' });
+    }
+
     const user = await User.findById(userId);
+
+    if (!user) {
+      return res.status(404).json({ error: 'User not found' });
+    }
 
     const posts = await Post.find({ author: userId });
 
@@ -23,7 +33,6 @@ router.post('/follow', async (req, res) => {
 
     try {
         const user = await User.findById(userId)
-        console.log("User:", user);
 
         const followedUser = await User.findById(user_id_followed)
         if (!followedUser) {
