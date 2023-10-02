@@ -2,7 +2,8 @@ const mongoose = require('mongoose');
 
 const commentSchema = new mongoose.Schema({
   text: String,
-  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' }
+  author: { type: mongoose.Schema.Types.ObjectId, ref: 'User' },
+  date: {type: Date, default: Date.now}
 });
 
 const postSchema = new mongoose.Schema({
@@ -15,7 +16,7 @@ const postSchema = new mongoose.Schema({
     ref: 'User'
   },
   likes: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }],
-  comments: [commentSchema], // Yorumları burada bir dizi olarak tanımlıyoruz
+  comments: [commentSchema], 
   savedBy: [{ type: mongoose.Schema.Types.ObjectId, ref: 'User' }]
 });
 
