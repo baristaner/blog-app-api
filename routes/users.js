@@ -28,6 +28,25 @@ router.get('/users/:userId', async (req, res) => {
   }
 });
 
+// Get User's Posts
+router.get('/users/:authorId/posts', async (req, res) => {
+  const { authorId } = req.params; 
+
+  try {
+    const userPosts = await Post.find({ author: authorId });
+
+    if (!userPosts || userPosts.length === 0) {
+      return res.status(404).json({ error: 'No post found.' });
+    }
+
+    res.json(userPosts);
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: 'Server Error' });
+  }
+});
+
+
 router.post('/follow', async (req, res) => {
     const { userId,user_id_followed } = req.query; 
 

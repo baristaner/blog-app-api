@@ -1,6 +1,7 @@
 const dotenv = require('dotenv');
 dotenv.config(); 
 
+
 const express = require('express');
 const basicAuth = require('express-basic-auth');
 const router = express.Router();
@@ -67,35 +68,66 @@ router.post('/admin/addpost', authenticateToken, upload.single('image'), async (
     }
 });
 
-router.post('/updatepost',authenticateToken, async (req, res) => {
+router.post("/updatepost", authenticateToken, async (req, res) => {
+  const { id, title, content } = req.query;
+  const userId = req.userId;
+
+  try {
+    const post = await Post.findById(id);
+
+    if (!post) {
+      return res.status(404).json({ error: "Post not found" });
+    }
+
+    if (post.author.toString() !== userId) {
+      return res
+        .status(403)
+        .json({ error: "You are not authorized to edit this post" });
+    }
+
+    await Post.findByIdAndUpdate(id, {
+      title,
+      content,
+    });
+
+    res.json({ id, title, content });
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ error: "Sunucu hatası: Gönderi güncellenemedi." });
+  }
+});
+
+router.delete('/admin/deletepost/:id', authenticateToken, async (req, res) => {
+    const userId = req.userId;
+    const postId = req.params.id;
+
     try {
-        const { id,title,content } = req.query; 
-        await Post.findByIdAndUpdate(id, {
-            title,
-            content
-        });
-        res.json({ id,title,content });
+        const post = await Post.findById(postId);
+
+        if (!post) {
+            return res.status(404).json({ error: 'Gönderi bulunamadı' });
+        }
+
+        if (post.author.toString() !== userId) {
+            return res.status(401).json({ error: 'Yetkisiz işlem' });
+        }
+
+        await post.remove();
+
+        console.log("Post Deleted successfully");
+        res.status(204).send(); 
     } catch (error) {
         console.error(error);
-        res.status(500).json({ error: 'Sunucu hatası: Gönderi güncellenemedi.' });
+        res.render('error');
     }
 });
 
-router.delete('/admin/deletepost/:id', authenticateToken,async (req, res) => {
-    try {
-        await Post.findByIdAndDelete(req.params.id);
-        console.log("Post Deleted successfully");
-    } catch (error) {
-        console.error(error);
-        res.render('error'); 
-    }
-});
 
 router.get('/admin/edit/:id', async (req, res) => {
     try {
         const postId = req.params.id;
         const post = await Post.findById(postId);
-        res.json(post); // JSON verisi olarak post verisini iletilir
+        res.json(post); 
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Sunucu hatası: Gönderi düzenlenemedi.' });

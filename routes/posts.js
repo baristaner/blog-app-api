@@ -2,6 +2,8 @@ const express = require('express');
 const router = express.Router();
 const path = require('path');
 const Post = require('../models/Post'); 
+const mongoose = require('mongoose');
+const ObjectId = require('mongoose').Types.ObjectId;
 
 // GET All Posts as JSON
 router.get('/posts/all', async (req, res) => {
@@ -19,7 +21,7 @@ router.post('/likepost', async (req, res) => {
     const { author, postId } = req.query; 
 
     if (!author || !postId) {
-    return res.status(400).json({ error: 'Author and postId must be provided' });
+        return res.status(400).json({ error: 'Author and postId must be provided' });
     }
 
     try {
@@ -28,12 +30,19 @@ router.post('/likepost', async (req, res) => {
             return res.status(404).json({ error: 'Post not found' });
         }
 
-        if (post.likes.includes(author)) {
-            return res.status(400).json({ error: 'You already liked this post' });
+        const authorObjectId = new mongoose.Types.ObjectId(author);
+
+        const likeIndex = post.likes.indexOf(authorObjectId);
+
+        if (likeIndex !== -1) {
+            post.likes.splice(likeIndex, 1);
+
+            await post.save();
+            return res.json({ message: 'Post unliked successfully' });
         }
 
-        post.likes.push(author);
-
+        // Kullanıcı beğeni yapmamışsa, beğeni ekleyin
+        post.likes.push(authorObjectId);
         await post.save();
 
         res.json({ message: 'Post liked successfully' });
@@ -48,7 +57,7 @@ router.post('/savepost', async (req, res) => {
     const { author, postId } = req.query; 
 
     if (!author || !postId) {
-    return res.status(400).json({ error: 'Author and postId must be provided' });
+        return res.status(400).json({ error: 'Author and postId must be provided' });
     }
 
     try {
@@ -57,21 +66,17 @@ router.post('/savepost', async (req, res) => {
             return res.status(404).json({ error: 'Post not found' });
         }
 
-        if (post.savedBy.includes(author)) {
-            return res.status(400).json({ error: 'You already saved this post' });
-        }
-
         const isSaved = post.savedBy.includes(author);
 
         if (isSaved) {
-            post.savedBy.pull(author);
+            post.savedBy.pull(author); // Kullanıcıyı listeden çıkar
         } else {
-            post.savedBy.push(author);
+            post.savedBy.push(author); // Kullanıcıyı listeye ekle
         }
 
         await post.save();
 
-        res.json({ message: 'Post saved successfully' });
+        res.json({ message: isSaved ? 'Post unsaved successfully' : 'Post saved successfully' });
     } catch (error) {
         console.error(error);
         res.status(500).json({ error: 'Internal server error' });
@@ -85,6 +90,7 @@ router.post('/commentpost', async (req, res) => {
      if (!author || !postId || !text ) {
     return res.status(400).json({ error: 'Author and postId,text must be provided' });
     }
+    
     try {
         const post = await Post.findById(postId);
         if (!post) {
@@ -121,6 +127,22 @@ router.get('/posts/:postId', async (req, res) => {
         res.status(500).json({ error: 'Internal server error' });
     }
 });
+
+// Get Post By User
+router.get('/posts/:postId', async (req, res) => {
+    const postId = req.params.postId;
+    try {
+        const post = await Post.findById(postId);
+        if (!post) {
+            return res.status(404).json({ error: 'Post not found' });
+        }
+        res.json(post);
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({ error: 'Internal server error' });
+    }
+});
+
 
 // Get the Image path 
 router.get('/uploads/:imagePath', (req, res) => {
