@@ -1,156 +1,43 @@
 const express = require('express');
 const router = express.Router();
-const path = require('path');
-const Post = require('../models/Post'); 
-const mongoose = require('mongoose');
-const ObjectId = require('mongoose').Types.ObjectId;
+const multer = require('multer');
+const postController = require('../controllers/postController');
+const authMiddleware = require('../middlewares/authMiddleware');
 
-// GET All Posts as JSON
-router.get('/posts/all', async (req, res) => {
-    try {
-        const posts = await Post.find();
-        res.json(posts);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
+const storage = multer.diskStorage({
+  destination: function (req, file, cb) {
+    cb(null, 'uploads/');
+  },
+  filename: function (req, file, cb) {
+    cb(null, Date.now() + '-' + file.originalname);
+  },
 });
 
-// Like Post
-router.post('/likepost', async (req, res) => {
-    const { author, postId } = req.query; 
+const upload = multer({ storage: storage });
 
-    if (!author || !postId) {
-        return res.status(400).json({ error: 'Author and postId must be provided' });
-    }
+// POST route to create a new post
+router.post('/addpost', authMiddleware.authenticateToken,upload.single('image'), postController.addPost);
 
-    try {
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ error: 'Post not found' });
-        }
+// PUT route to update an existing post
+router.put('/updatepost', authMiddleware.authenticateToken, postController.updatePost);
 
-        const authorObjectId = new mongoose.Types.ObjectId(author);
+// DELETE route to delete a post by ID
+router.delete('/deletepost/:id',authMiddleware.authenticateToken,postController.deletePost);
 
-        const likeIndex = post.likes.indexOf(authorObjectId);
+// GET route to get all posts
+router.get('/posts/all', postController.getAllPosts);
 
-        if (likeIndex !== -1) {
-            post.likes.splice(likeIndex, 1);
+// POST route to like a post
+router.post('/likepost', postController.likePost);
 
-            await post.save();
-            return res.json({ message: 'Post unliked successfully' });
-        }
+// POST route to save/unsave a post
+router.post('/savepost', postController.savePost);
 
-        // Kullanıcı beğeni yapmamışsa, beğeni ekleyin
-        post.likes.push(authorObjectId);
-        await post.save();
+// POST route to add a comment to a post
+router.post('/commentpost', postController.commentPost);
 
-        res.json({ message: 'Post liked successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Save Post
-router.post('/savepost', async (req, res) => {
-    const { author, postId } = req.query; 
-
-    if (!author || !postId) {
-        return res.status(400).json({ error: 'Author and postId must be provided' });
-    }
-
-    try {
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ error: 'Post not found' });
-        }
-
-        const isSaved = post.savedBy.includes(author);
-
-        if (isSaved) {
-            post.savedBy.pull(author); // Kullanıcıyı listeden çıkar
-        } else {
-            post.savedBy.push(author); // Kullanıcıyı listeye ekle
-        }
-
-        await post.save();
-
-        res.json({ message: isSaved ? 'Post unsaved successfully' : 'Post saved successfully' });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Add Comment to Post
-router.post('/commentpost', async (req, res) => {
-    const { author, postId,text } = req.query; 
-
-     if (!author || !postId || !text ) {
-    return res.status(400).json({ error: 'Author and postId,text must be provided' });
-    }
-    
-    try {
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ error: 'Post not found' });
-        }
-
-        const newComment = {
-            text,
-            author: author,
-        };
-
-        post.comments.push(newComment);
-
-        await post.save();
-
-        res.json({ message: 'Comment added successfully', comment: newComment });
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Get Post By ID
-router.get('/posts/:postId', async (req, res) => {
-    const postId = req.params.postId;
-    try {
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ error: 'Post not found' });
-        }
-        res.json(post);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-// Get Post By User
-router.get('/posts/:postId', async (req, res) => {
-    const postId = req.params.postId;
-    try {
-        const post = await Post.findById(postId);
-        if (!post) {
-            return res.status(404).json({ error: 'Post not found' });
-        }
-        res.json(post);
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({ error: 'Internal server error' });
-    }
-});
-
-
-// Get the Image path 
-router.get('/uploads/:imagePath', (req, res) => {
-  const imagePath = req.params.imagePath;
-  const imageFilePath = path.join(__dirname, '../uploads', imagePath);
-  
-  res.sendFile(imageFilePath);
-});
+// GET route to get a post by ID
+router.get('/posts/:postId', postController.getPostById);
 
 
 module.exports = router;

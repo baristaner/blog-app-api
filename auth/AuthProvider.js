@@ -5,7 +5,8 @@ const bcrypt = require('bcrypt');
 const User = require('../models/User'); 
 const router = express.Router();
 const multer = require('multer');
-
+const mongoose = require('mongoose');
+const ObjectId = mongoose.Types.ObjectId;
 
 dotenv.config(); 
 router.use(express.json());
